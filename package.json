@@ -1,0 +1,23 @@
+{
+  "name": "spa-promise",
+  "version": "0.0.1",
+  "description": "promises/a+ api for single page application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zcoding/spa-promise.git"
+  },
+  "keywords": [
+    "spa",
+    "promises/a+"
+  ],
+  "author": "zcoding",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zcoding/spa-promise/issues"
+  },
+  "homepage": "https://github.com/zcoding/spa-promise"
+}
