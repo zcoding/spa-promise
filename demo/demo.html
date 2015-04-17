@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Promise/A+</title>
+</head>
+<body>
+  <script src="../src/promise.js"></script>
+  <script>
+  var unknown = Math.random() * 10;
+  var p = new ZPromise(function(fulfill, reject) {
+    if (unknown > 5) {
+      reject(new Error('hehe'));
+    } else {
+      setTimeout(function() {
+        fulfill(123);
+      }, 1000);
+    }
+  });
+  p.done(function(code) { // done方法不能链式调用
+    console.log('this log second... ' + code);
+  });
+  p.done(function(code) {
+    console.log('this log third... ' + code);
+  });
+  p.then(function(code) {
+    console.log(code);
+    return 456;
+  }, function(err) {
+    console.log(err);
+    return err;
+  }).then(function(code) {
+    console.log(code + ' ~');
+  }, function(err) {
+    console.log('~ ' + err);
+  });
+  console.log('this log first');
+  </script>
+</body>
+</html>
