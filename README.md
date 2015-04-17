@@ -25,4 +25,34 @@ example:
         console.log('Something wrong.' + err);
     });
 
+example with ajax:
+
+    var getview = new iPromise(function(fulfill, reject) {
+        $.ajax({
+            url: '/path/to/view',
+            success: function(res) {
+                fulfill(res);
+            },
+            error: function(err) {
+                reject(err);
+            }
+        });
+    });
+    getView.then(function(res) {
+        console.log(res);
+    }, function(err) {
+        console.log(err);
+    });
+
 ##chain
+`then`方法可以链式调用，`then`方法总是返回一个<strong>新的</strong>iPromise对象。
+
+    var myPromise = new iPromise(function(fulfill, reject) {
+        setTimeout(function() {
+            if (condition) {
+                fulfill(123);
+            } else {
+                reject(new Error('no'));
+            }
+        }, 1000);
+    });

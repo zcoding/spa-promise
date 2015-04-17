@@ -53,7 +53,7 @@
     }
   }
 
-  var Promise = window.ZPromise = function(fn) {
+  var Promise = window.iPromise = function(fn) {
     var state = STATE.PENDING;
     var value = null;
     var handlers = [];

@@ -8,7 +8,7 @@
   <script src="../src/promise.js"></script>
   <script>
   var unknown = Math.random() * 10;
-  var p = new ZPromise(function(fulfill, reject) {
+  var p = new iPromise(function(fulfill, reject) {
     if (unknown > 5) {
       reject(new Error('hehe'));
     } else {
