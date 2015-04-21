@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Promise/A+</title>
+</head>
+<body>
+  <script src="../src/ipromise.js"></script>
+  <script>
+  var unknown = Math.random() * 10;
+  var p = new iPromise(function(fulfill, reject) {
+      setTimeout(function() {
+        if (unknown > 5) {
+          reject(new Error('hehe'));
+        } else {
+          fulfill(123);
+        };
+      }, 1000);
+  });
+
+  /// done
+  p.done(function success(code) { // done方法不能链式调用
+    console.log('2.' + code);
+  }, function fail(err) {
+    console.log(err);
+  });
+  p.done(function(code) {
+    console.log('3.' + code);
+  });
+
+  // /// then chain
+  // p.then(function(code) {
+  //   console.log('4.' + code);
+  //   return 456;
+  // }, function(err) {
+  //   console.log(err);
+  //   return err;
+  // }).then(function(code) { // 新的Promise
+  //   console.log('~ ' + code);
+  // }, function(err) {
+  //   console.log('~ ' + err);
+  // });
+
+  // /// then
+  // p.then(function(code) {
+  //   console.log('5.' + code);
+  // }, function(err) {
+  //   console.log(err);
+  // });
+
+  // var neverknown = Math.random() * 10;
+  // var p2 = new iPromise(function() {
+  //   setTimeout(function() {
+  //     if (neverknown < 5) {
+  //       reject(new Error('You never know.'));
+  //     } else {
+  //       fulfill(999);
+  //     }
+  //   }, 5000);
+  // });
+
+  /// sync
+  console.log('1.');
+  </script>
+</body>
+</html>

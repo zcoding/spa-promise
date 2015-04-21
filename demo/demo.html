@@ -9,31 +9,38 @@
   <script>
   var unknown = Math.random() * 10;
   var p = new iPromise(function(fulfill, reject) {
-    if (unknown > 5) {
-      reject(new Error('hehe'));
-    } else {
       setTimeout(function() {
-        fulfill(123);
-      }, 1000);
-    }
+        if (unknown > 5) {
+          reject(new Error('hehe'));
+        } else {
+          fulfill(123);
+        };
+      }, 3000);
   });
-  p.done(function(code) { // done方法不能链式调用
-    console.log('this log second... ' + code);
-  });
-  p.done(function(code) {
-    console.log('this log third... ' + code);
-  });
+  // p.done(function(code) { // done方法不能链式调用
+  //   console.log('this log second... ' + code);
+  // });
+  // p.done(function(code) {
+  //   console.log('this log third... ' + code);
+  // });
   p.then(function(code) {
     console.log(code);
     return 456;
   }, function(err) {
     console.log(err);
     return err;
-  }).then(function(code) {
+  }).then(function(code) { // 新的Promise
     console.log(code + ' ~');
   }, function(err) {
     console.log('~ ' + err);
   });
+
+  p.then(function(code) {
+    console.log('还是当前的Promise. code=' + code);
+  }, function(err) {
+    console.log('还是当前的Promise. 出错：' + err);
+  });
+
   console.log('this log first');
   </script>
 </body>
