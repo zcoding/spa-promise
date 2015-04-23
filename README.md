@@ -57,3 +57,5 @@ var myPromise = new iPromise(function(fulfill, reject) {
     }, 1000);
 });
 ```
+##.all(), .when()
+`.all()`方法或者它的别名方法`.when()`

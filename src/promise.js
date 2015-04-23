@@ -8,7 +8,9 @@
 
   /**
    * Check if a value is a Promise and, if it is,
+   * 判断是不是thenable，如果是，
    * return the `then` method of that promise.
+   * 返回这个Promise对象的then方法
    *
    * @param {Promise|Any} value
    * @return {Function|Null}

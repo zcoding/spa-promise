@@ -7,10 +7,9 @@
 <body>
   <script src="../src/ipromise.js"></script>
   <script>
-  var unknown = Math.random() * 10;
   var p = new iPromise(function(fulfill, reject) {
       setTimeout(function() {
-        if (unknown > 5) {
+        if (Math.random() * 10 > 5) {
           reject(new Error('hehe'));
         } else {
           fulfill(123);
@@ -18,49 +17,69 @@
       }, 1000);
   });
 
-  /// done
-  p.done(function success(code) { // done方法不能链式调用
+  //// .done()方法使用示例
+  //// .done()方法不能链式调用
+  //// 多次调用.done()方法，回调（成功或失败）将会按照顺序执行
+  p.done(function success(code) {
     console.log('2.' + code);
   }, function fail(err) {
-    console.log(err);
+    console.log('Error occured 1: ' + err);
   });
   p.done(function(code) {
     console.log('3.' + code);
+  }, function(err) {
+    console.log('Error occured 2: ' + err);
   });
 
-  // /// then chain
-  // p.then(function(code) {
-  //   console.log('4.' + code);
-  //   return 456;
-  // }, function(err) {
-  //   console.log(err);
-  //   return err;
-  // }).then(function(code) { // 新的Promise
-  //   console.log('~ ' + code);
-  // }, function(err) {
-  //   console.log('~ ' + err);
+  //// .then()方法使用示例
+  //// .then()方法可以链式调用，但是每次调用.then()方法返回的都是一个新的iPromise对象。上一个.then()的成功回调函数，如果有返回值，其返回值将作为下一个.then()的成功回调中的传入参数。
+  p.then(function(result) {
+    console.log('Then 1: ' + result);
+  }, function(err) {
+    console.log('Then Erro 1: ' + err);
+  });
+  //// 链式.then()示例
+  p.then(function(result) {
+    console.log('Then 2: ' + result);
+    return result + 100;
+  }, function(err) {
+    console.log('Then Error 2: ' + err);
+    return new Error('[Then Error 2]');
+  }).then(function(result) { // 这里的.then()是由上一个.then()返回的新的iPromise对象调用的
+    console.log('Then 3: ' + result);
+  }, function(err) {
+    console.log('Then Error 3: ' + err);
+  });
+
+  //// all函数示例
+  var guess = new iPromise(function(fulfill, reject) {
+    setTimeout(function() {
+      if (Math.random() * 10 > 5) {
+        fulfill('www');
+      } else {
+        reject(new Error('[K Error]'));
+      }
+    }, 1500);
+  });
+
+  var read = new iPromise(function(fulfill, reject) {
+    setTimeout(function() {
+      if (Math.random() * 10 > 5) {
+        fulfill('read successfully!');
+      } else {
+        reject(new Error('[Read Error]'));
+      }
+    }, 2000);
+  });
+
+  // iPromise.all([guess, read]).then(function(url, msg) {
+  //   console.log('All succeed. URL: ' + url + ' Message: ' + msg);
+  // }, function(err1, err2) {
+  //   console.log('Not All Succeed.');
   // });
 
-  // /// then
-  // p.then(function(code) {
-  //   console.log('5.' + code);
-  // }, function(err) {
-  //   console.log(err);
-  // });
-
-  // var neverknown = Math.random() * 10;
-  // var p2 = new iPromise(function() {
-  //   setTimeout(function() {
-  //     if (neverknown < 5) {
-  //       reject(new Error('You never know.'));
-  //     } else {
-  //       fulfill(999);
-  //     }
-  //   }, 5000);
-  // });
-
-  /// sync
-  console.log('1.');
+  /// 同步的
+  console.log('1.同步的先执行');
   </script>
 </body>
 </html>
