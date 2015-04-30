@@ -5,43 +5,54 @@
   <title>Promise/A+</title>
 </head>
 <body>
-  <script src="../src/promise.js"></script>
+  <script src="../src/ipromise.js"></script>
   <script>
-  var unknown = Math.random() * 10;
-  var p = new iPromise(function(fulfill, reject) {
-      setTimeout(function() {
-        if (unknown > 5) {
-          reject(new Error('hehe'));
-        } else {
-          fulfill(123);
-        };
-      }, 3000);
+  var guessBig = new iPromise(function(fulfill, reject) {
+    setTimeout(function() {
+      var result = Math.floor(Math.random() * 10);
+      if (result > 4) {
+        fulfill(result);
+      } else {
+        reject(new Error('You are wrong. The number is ' + result));
+      }
+    }, 1000);
   });
-  // p.done(function(code) { // done方法不能链式调用
-  //   console.log('this log second... ' + code);
-  // });
-  // p.done(function(code) {
-  //   console.log('this log third... ' + code);
-  // });
-  p.then(function(code) {
-    console.log(code);
-    return 456;
+
+  guessBig.then(function(result) {
+    console.log('you win! the result is ' + result);
+    return result*100;
+  }, function(err) {
+    return err;
+  }).then(function(prize) {
+    console.log('you get prize: ' + prize);
+    return new iPromise(function(fulfill, reject) {
+      setTimeout(function() {
+        var result = Math.floor(Math.random() * 10);
+        if (result < 5) {
+          fulfill(result);
+        } else {
+          reject(new Error('You are wrong. The number is ' + result));
+        }
+      }, 1000);
+    });
   }, function(err) {
     console.log(err);
+  })
+
+  // 从这里开始是另外一个promise
+  .then(function(result) {
+    console.log('you win! the result is ' + result);
+    return (10-result)*100;
+  }, function(err) {
     return err;
-  }).then(function(code) { // 新的Promise
-    console.log(code + ' ~');
+  }).then(function(prize) {
+    console.log('you get prize: ' + prize);
   }, function(err) {
-    console.log('~ ' + err);
+    console.log(err);
   });
 
-  p.then(function(code) {
-    console.log('还是当前的Promise. code=' + code);
-  }, function(err) {
-    console.log('还是当前的Promise. 出错：' + err);
-  });
+  console.log('Game start!');
 
-  console.log('this log first');
   </script>
 </body>
 </html>
