@@ -7,52 +7,6 @@
 <body>
   <script src="../src/ipromise.js"></script>
   <script>
-  var guessBig = new iPromise(function(fulfill, reject) {
-    setTimeout(function() {
-      var result = Math.floor(Math.random() * 10);
-      if (result > 4) {
-        fulfill(result);
-      } else {
-        reject(new Error('You are wrong. The number is ' + result));
-      }
-    }, 1000);
-  });
-
-  guessBig.then(function(result) {
-    console.log('you win! the result is ' + result);
-    return result*100;
-  }, function(err) {
-    return err;
-  }).then(function(prize) {
-    console.log('you get prize: ' + prize);
-    return new iPromise(function(fulfill, reject) {
-      setTimeout(function() {
-        var result = Math.floor(Math.random() * 10);
-        if (result < 5) {
-          fulfill(result);
-        } else {
-          reject(new Error('You are wrong. The number is ' + result));
-        }
-      }, 1000);
-    });
-  }, function(err) {
-    console.log(err);
-  })
-
-  // 从这里开始是另外一个promise
-  .then(function(result) {
-    console.log('you win! the result is ' + result);
-    return (10-result)*100;
-  }, function(err) {
-    return err;
-  }).then(function(prize) {
-    console.log('you get prize: ' + prize);
-  }, function(err) {
-    console.log(err);
-  });
-
-  console.log('Game start!');
-
   </script>
 </body>
 </html>

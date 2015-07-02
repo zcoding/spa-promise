@@ -25,37 +25,30 @@ myPromise.then(function(result) {
     console.log('Something wrong.' + err);
 });
 ```
-example with ajax:
+example with aja:
 ```javascript
-var getview = new iPromise(function(fulfill, reject) {
-    $.ajax({
-        url: '/path/to/view',
-        success: function(res) {
-            fulfill(res);
-        },
-        error: function(err) {
-            reject(err);
-        }
-    });
-});
-getView.then(function(res) {
-    console.log(res);
-}, function(err) {
-    console.log(err);
-});
+aja('/api/demo').get({page: 1})
+  .then(function(response) {
+    console.log('Get response: ' + response);
+  }, function(error) {
+    console.log('Aja error: ' + error);
+  })
+  .then(JSON.parse)
+  .then(function(json) {
+    console.log('Get json: ', json);
+  });
 ```
 ##chain
 `then`方法可以链式调用，`then`方法总是返回一个<strong>新的</strong>iPromise对象。
 ```javascript
-var myPromise = new iPromise(function(fulfill, reject) {
-    setTimeout(function() {
-        if (condition) {
-            fulfill(123);
-        } else {
-            reject(new Error('no'));
-        }
-    }, 1000);
-});
+
 ```
-##.all(), .when()
-`.all()`方法或者它的别名方法`.when()`
+## Static API
+
+###`.resolve(value)`
+
+###`.reject(value)`
+
+###`.all(promises)`
+
+###`.race(promise)`

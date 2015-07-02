@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Promise Aja</title>
+  </head>
+  <body>
+    <script src="../src/ipromise.js"></script>
+    <script src="aja.js"></script>
+    <script>
+    aja('/api/demo').get({page: 1})
+    .then(function(response) {
+      console.log('Get response: ' + response);
+    }, function(error) {
+      console.log('Aja error.');
+    })
+    .then(JSON.parse)
+    .then(function(json) {
+      console.log('Get JSON response: ', json);
+    });
+    </script>
+  </body>
+</html>
