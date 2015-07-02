@@ -1,10 +1,35 @@
+var utils = {};
+
+utils.isFunction = function(obj) {
+  return Object.prototype.toString.call(obj) === '[object Function]';
+};
+
 window.iPromise = (function() {
 
   var FULFILLED = 1, REJECTED = 2, PENDING = 0;
 
-  function invokeCallbacks(callbacks) {}
+  function invokeCallbacks(promise) {
+    var _callbacks = promise._callbacks;
+    for (var i = 0, len = _callbacks.length; i < len; ++i) {
+      var _callback = _callbacks[i];
+      //
+    }
+  }
 
-  function addToCallbacks(promise, onFulfilled, onRejected) {}
+  function handle(promise, onFulfilled, onRejected) {
+    if(promise._state === PENDING) {
+      setTimeout(function() { // always async
+        promise._callbacks.push({
+          "fulfill": onFulfilled,
+          "reject": onRejected
+        });
+      }, 0);
+    } else if (promise._state === FULFILLED) {
+      onFulfilled(promise._value);
+    } else {
+      onRejected(promise._value);
+    }
+  }
 
   function thenable(x) {
     var t = typeof x;
@@ -42,13 +67,13 @@ window.iPromise = (function() {
   function fulfill(promise, value) {
     promise._state = FULFILLED;
     this._value = value;
-    invokeCallbacks(promise._callbacks);
+    invokeCallbacks(promise);
   }
 
   function reject(promise, error) {
     promise._state = REJECTED;
     this._value = error;
-    invokeCallbacks(promise._callbacks);
+    invokeCallbacks(promise);
   }
 
   /**
@@ -80,13 +105,28 @@ window.iPromise = (function() {
    * @return {iPromise}
    */
   prtt.then = function(onFulfilled, onRejected) {
-    var oldPromsie = this;
-    addToCallbacks(this, onFulfilled, onRejected);
+    var oldPromise = this;
     return new iPromise(function(resolve, reject) {
-      oldPromise.then(function(value) {
-        resolve(value);
+      handle(oldPromise, function(value) {
+        if (utils.isFunction(onFulfilled)) {
+          try {
+            resolve(onFulfilled(value));
+          } catch(error) {
+            reject(error);
+          }
+        } else {
+          resolve(value);
+        }
       }, function(error) {
-        reject(error);
+        if (utils.isFunction(onRejected)) {
+          try {
+            resolve(onRejected(error))
+          } catch(ex) {
+            reject(ex);
+          }
+        } else {
+          reject(error);
+        }
       });
     });
   };

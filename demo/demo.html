@@ -7,6 +7,14 @@
 <body>
   <script src="../src/ipromise.js"></script>
   <script>
+  var myPromise = new iPromise(function(resolve, reject) {
+    setTimeout(function() {
+      resolve(123);
+    }, 1000);
+  });
+  myPromise.then(function(value) {
+    console.log(value);
+  });
   </script>
 </body>
 </html>
