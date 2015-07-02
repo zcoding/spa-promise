@@ -34,7 +34,7 @@ window.iPromise = (function() {
   function thenable(x) {
     var t = typeof x;
     if (value && (t === 'object' || t === 'function') && typeof x.then === 'function') {
-        return true;
+        return x.then;
     }
     return false;
   }
@@ -50,8 +50,9 @@ window.iPromise = (function() {
       return;
     }
     try {
-      if (thenable(x)) { // iPromise or thenable
-        x.then(function(value) {
+      var then = thenable(x);
+      if (then) { // iPromise or thenable
+        then.call(x, function(value) {
           resolve(promise, value);
         }, function(error) {
           reject(promise, error);

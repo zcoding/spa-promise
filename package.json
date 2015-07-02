@@ -4,7 +4,7 @@
   "description": "promises/a+ api for single page application",
   "main": "index.js",
   "scripts": {
-    "start": "node scripts/server.js",
+    "start": "node --harmony scripts/server.js",
     "test": "node scripts/test.js"
   },
   "repository": {
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/zcoding/spa-promise/issues"
   },
-  "homepage": "https://github.com/zcoding/spa-promise"
+  "homepage": "https://github.com/zcoding/spa-promise",
+  "devDependencies": {
+    "koa": "^0.21.0"
+  }
 }
