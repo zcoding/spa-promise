@@ -8,27 +8,26 @@ window.iPromise = (function() {
 
   var FULFILLED = 1, REJECTED = 2, PENDING = 0;
 
-  function invokeCallbacks(promise) {
-    var _callbacks = promise._callbacks;
-    for (var i = 0, len = _callbacks.length; i < len; ++i) {
-      var _callback = _callbacks[i];
-      //
-    }
-  }
-
   function handle(promise, onFulfilled, onRejected) {
-    if(promise._state === PENDING) {
-      setTimeout(function() { // always async
-        promise._callbacks.push({
-          "fulfill": onFulfilled,
-          "reject": onRejected
-        });
-      }, 0);
-    } else if (promise._state === FULFILLED) {
-      onFulfilled(promise._value);
-    } else {
-      onRejected(promise._value);
-    }
+    promise._callbacks.push({
+      "fulfill": onFulfilled,
+      "reject": onRejected
+    });
+    setTimeout(function() { // always async
+      for (var i = 0; i < promise._callbacks.length; ++i) {
+        var _callback = promise._callbacks[i];
+        if (promise._state === PENDING) {
+          continue;
+        }
+        if (promise._state === FULFILLED) {
+          _callback['fulfill']();
+        }
+        if (promise._state === REJECTED) {
+          _callback['reject']();
+        }
+        promise._callbacks.splice(i, 1);
+      }
+    }, 0);
   }
 
   function thenable(x) {
@@ -45,7 +44,7 @@ window.iPromise = (function() {
    * @param {Object} x
    */
   function resolve(promise, x) {
-    if (promise === x) { // 2.3.1. If promise and x refer to the same object, reject promise with a TypeError as the reason.
+    if (promise === x) {
       reject(promise, new TypeError('The promise and its value refer to the same object"'));
       return;
     }
@@ -68,13 +67,11 @@ window.iPromise = (function() {
   function fulfill(promise, value) {
     promise._state = FULFILLED;
     this._value = value;
-    invokeCallbacks(promise);
   }
 
   function reject(promise, error) {
     promise._state = REJECTED;
     this._value = error;
-    invokeCallbacks(promise);
   }
 
   /**
@@ -90,9 +87,9 @@ window.iPromise = (function() {
 
     var promise = this;
 
-    resolver(function fulfilled(value) {
+    resolver(function(value) {
       resolve(promise, value);
-    }, function rejected(error) {
+    }, function(error) {
       reject(promise, error);
     });
 
@@ -108,7 +105,7 @@ window.iPromise = (function() {
   prtt.then = function(onFulfilled, onRejected) {
     var oldPromise = this;
     return new iPromise(function(resolve, reject) {
-      handle(oldPromise, function(value) {
+      handle(oldPromise, function(value) { // pending until old promise is resolved or rejected
         if (utils.isFunction(onFulfilled)) {
           try {
             resolve(onFulfilled(value));
@@ -142,16 +139,31 @@ window.iPromise = (function() {
 
   /**
    * @static resolve
-   * @param {Function} resolver
+   * @param {Object} obj
    * @return {iPromise}
    */
-  iPromise.resolve = function() {};
+  iPromise.resolve = function(obj) {};
 
-  iPromise.reject = function() {};
+  /**
+   * @static reject
+   * @param {Object} obj
+   * @return {iPromise}
+   */
+  iPromise.reject = function(obj) {};
 
-  iPromise.all = function() {};
+  /**
+   * @static all
+   * @param {Array} promises
+   * @return {iPromise}
+   */
+  iPromise.all = function(promises) {};
 
-  iPromise.race = function() {};
+  /**
+   * @static race
+   * @param {Array} promises
+   * @return {iPromise}
+   */
+  iPromise.race = function(promises) {};
 
   return iPromise;
 

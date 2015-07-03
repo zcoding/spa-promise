@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>delay</title>
+  </head>
+  <body>
+    <script src="../src/ipromise.js"></script>
+    <script>
+      function delay(time) {
+        return new iPromise(function(resolve, reject) {
+          setTimeout(resolve, time);
+        });
+      }
+      delay(1200)
+      .then(function() {
+        console.log('1.2s');
+        return delay(2000);
+      })
+      .then(function() {
+        console.log('1.2s + 2s');
+        return delay(3500).then(function() {
+          console.log('1.2s + 2s + 3.5s');
+        });
+      }).then(function() {
+        console.log('done');
+      });
+    </script>
+  </body>
+</html>
