@@ -5,16 +5,39 @@
   <title>Promise/A+</title>
 </head>
 <body>
+  <h1>这个例子和demo-es6完全一样</h1>
+  <p>这个例子将使用iPromise API</p>
   <script src="../src/ipromise.js"></script>
   <script>
-  var myPromise = new iPromise(function(resolve, reject) {
-    setTimeout(function() {
-      resolve(123);
-    }, 1000);
-  });
-  myPromise.then(function(value) {
-    console.log(value);
-  });
+  var origin = 10;
+  var doSomething = function(value) {
+    return new iPromise(function(resolve, reject) {
+      setTimeout(function() {
+        resolve(value);
+      }, 1000);
+    });
+  };
+  var doSomethingElse = function(value) {
+    console.log('1s later...');
+    return value + 10;
+  };
+  var doAnotherThing = function(value) {
+    return new iPromise(function(resolve, reject) {
+      setTimeout(function() {
+        resolve(value+10);
+      }, 3000);
+    });
+  };
+  doSomething(origin)
+    .then(doSomethingElse)
+    .then(doAnotherThing)
+    .then(function(value) {
+      console.log('3s later...');
+      console.log('result: ' + value);
+    })
+    .catch(function(error) {
+      console.log('any problem: ' + error);
+    });
   </script>
 </body>
 </html>

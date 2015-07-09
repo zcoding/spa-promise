@@ -8,31 +8,26 @@ window.iPromise = (function() {
 
   var FULFILLED = 1, REJECTED = 2, PENDING = 0;
 
+  /**
+   * 将成功或失败回调加入异步队列队尾
+   * @param {iPromise} promise
+   * @param {Function} onFulfilled
+   * @param {Function} onRejected
+   */
   function handle(promise, onFulfilled, onRejected) {
-    promise._callbacks.push({
-      "fulfill": onFulfilled,
-      "reject": onRejected
-    });
     setTimeout(function() { // always async
-      for (var i = 0; i < promise._callbacks.length; ++i) {
-        var _callback = promise._callbacks[i];
-        if (promise._state === PENDING) {
-          continue;
-        }
-        if (promise._state === FULFILLED) {
-          _callback['fulfill']();
-        }
-        if (promise._state === REJECTED) {
-          _callback['reject']();
-        }
-        promise._callbacks.splice(i, 1);
+      if (utils.isFunction(onFulfilled)) {
+        promise._FCallbacks.push(onFulfilled);
+      }
+      if (utils.isFunction(onRejected)) {
+        promise._RCallbacks.push(onRejected);
       }
     }, 0);
   }
 
   function thenable(x) {
     var t = typeof x;
-    if (value && (t === 'object' || t === 'function') && typeof x.then === 'function') {
+    if (x && (t === 'object' || t === 'function') && typeof x.then === 'function') {
         return x.then;
     }
     return false;
@@ -50,7 +45,7 @@ window.iPromise = (function() {
     }
     try {
       var then = thenable(x);
-      if (then) { // iPromise or thenable
+      if (then) { // thenable
         then.call(x, function(value) {
           resolve(promise, value);
         }, function(error) {
@@ -64,14 +59,32 @@ window.iPromise = (function() {
     }
   }
 
+  /**
+   * change the status to `FULFILLED` and invoke callbacks
+   * @param {iPromise} promise
+   * @param {Object} value
+   */
   function fulfill(promise, value) {
     promise._state = FULFILLED;
-    this._value = value;
+    promise._value = value;
+    for (var i = 0, len = promise._FCallbacks.length; i < len; ++i) {
+      promise._FCallbacks[i](value) // what is `this` here ?
+    }
+    promise._FCallbacks.splice(0); // 清空
   }
 
+  /**
+   * change the status to `REJECTED` and invoke callbacks
+   * @param {iPromise} promise
+   * @param {Obejct} error
+   */
   function reject(promise, error) {
     promise._state = REJECTED;
-    this._value = error;
+    promise._value = error;
+    for (var i = 0, len = promise._RCallbacks.length; i < len; ++i) {
+      promise._RCallbacks[i](error);
+    }
+    promise._RCallbacks.splice(0); // 清空
   }
 
   /**
@@ -83,11 +96,12 @@ window.iPromise = (function() {
 
     this._state = PENDING;
     this._value = null;
-    this._callbacks = [];
+    this._FCallbacks = []; // FULFILLED 异步队列
+    this._RCallbacks = []; // REJECTED 异步队列
 
     var promise = this;
 
-    resolver(function(value) {
+    resolver(function(value) { // 先执行同步代码
       resolve(promise, value);
     }, function(error) {
       reject(promise, error);
@@ -100,7 +114,7 @@ window.iPromise = (function() {
   /**
    * @param {Function} onFulfilled
    * @param {Function} onRejected
-   * @return {iPromise}
+   * @return {iPromise} always return a new Promsie
    */
   prtt.then = function(onFulfilled, onRejected) {
     var oldPromise = this;
@@ -131,7 +145,7 @@ window.iPromise = (function() {
 
   /**
    * @param {Function} onRejected
-   * @return {iPromsie}
+   * @return {iPromsie} always return a new Promise
    */
   prtt.catch = function(onRejected) {
     return this.then(null, onRejected);
@@ -139,17 +153,25 @@ window.iPromise = (function() {
 
   /**
    * @static resolve
-   * @param {Object} obj
+   * @param {Object} value
    * @return {iPromise}
    */
-  iPromise.resolve = function(obj) {};
+  iPromise.resolve = function(value) {
+    return new iPromise(function(resolve, reject) {
+      resolve(value);
+    });
+  };
 
   /**
    * @static reject
-   * @param {Object} obj
+   * @param {Object} error
    * @return {iPromise}
    */
-  iPromise.reject = function(obj) {};
+  iPromise.reject = function(error) {
+    return new iPromise(function(resolve, reject) {
+      reject(error);
+    });
+  };
 
   /**
    * @static all

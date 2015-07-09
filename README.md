@@ -36,13 +36,20 @@ aja('/api/demo').get({page: 1})
   .then(JSON.parse)
   .then(function(json) {
     console.log('Get json: ', json);
+  })
+  .catch(function(error) {
+    // deal with error
   });
 ```
 ##chain
 `then`方法可以链式调用，`then`方法总是返回一个<strong>新的</strong>iPromise对象。
 ```javascript
-
+doSomething()
+  .then(doSomethingElse)
+  .then(doAnotherThing)
+  .catch(dealWithError)
 ```
+在这里，`doSomething`|`doSomethingElse`|`doAnotherThing`都返回一个Promise，虽然每个函数内部都是异步的，但总能保证先完成doSomething，再做doSomethingElse，最后做doAnotherThing
 ## Static API
 
 ###`.resolve(value)`

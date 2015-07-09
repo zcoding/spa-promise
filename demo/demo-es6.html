@@ -5,6 +5,38 @@
     <title>ES6 Promises</title>
   </head>
   <body>
-
+    <h1>这个例子纯粹用来参考</h1>
+    <p>这个例子将使用原生的Promise API，它的方法和iPromise是一致的（iPromise只实现了Promise API的子集，因为有些不完全符合Promises/A+规范的方法并不建议使用）</p>
+    <script>
+    var origin = 10;
+    var doSomething = function(value) {
+      return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+          resolve(value);
+        }, 1000);
+      });
+    };
+    var doSomethingElse = function(value) {
+      console.log('1s later...');
+      return value + 10;
+    };
+    var doAnotherThing = function(value) {
+      return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+          resolve(value+10);
+        }, 3000);
+      });
+    };
+    doSomething(origin)
+      .then(doSomethingElse)
+      .then(doAnotherThing)
+      .then(function(value) {
+        console.log('3s later...');
+        console.log('result: ' + value);
+      })
+      .catch(function(error) {
+        console.log('any problem: ' + error);
+      });
+    </script>
   </body>
 </html>
