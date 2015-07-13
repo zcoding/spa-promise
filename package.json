@@ -22,6 +22,8 @@
   },
   "homepage": "https://github.com/zcoding/spa-promise",
   "devDependencies": {
-    "koa": "^0.21.0"
+    "koa": "^0.21.0",
+    "koa-router": "^5.1.2",
+    "koa-static": "^1.4.9"
   }
 }
