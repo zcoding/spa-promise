@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Promise/A+</title>
+</head>
+<body>
+  <h1>测试iPromise.resolve</h1>
+  <p>这个例子将使用iPromise API</p>
+  <script src="/ipromise.js"></script>
+  <script>
+  var shit = iPromise.resolve(123);
+  shit.then(function(value) {
+      console.log(value);
+    });
+  </script>
+</body>
+</html>

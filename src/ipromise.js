@@ -15,6 +15,14 @@ window.iPromise = (function() {
    * @param {Function} onRejected
    */
   function handle(promise, onFulfilled, onRejected) {
+    if (promise._state === FULFILLED) {
+      onFulfilled(promise._value);
+      return;
+    }
+    if (promise._state === REJECTED) {
+      onRejected(promise._value);
+      return;
+    }
     setTimeout(function() { // always async
       if (utils.isFunction(onFulfilled)) {
         promise._FCallbacks.push(onFulfilled);
@@ -178,14 +186,44 @@ window.iPromise = (function() {
    * @param {Array} promises
    * @return {iPromise}
    */
-  iPromise.all = function(promises) {};
+  iPromise.all = function(promises) {
+    var accumulator = [];
+    var ready = iPromise.resolve(null);
+    for (var i = 0, len = promises.length; i < len; ++i) {
+      var promise = promises[i];
+      ready = ready.then(function () {
+        return promise;
+      }).then(function (value) {
+        accumulator.push(value);
+      });
+    }
+    return ready.then(function () { return accumulator; });
+  };
 
   /**
    * @static race
    * @param {Array} promises
    * @return {iPromise}
    */
-  iPromise.race = function(promises) {};
+  iPromise.race = function(promises) {
+    return new iPromise(function(resolve, reject) {
+      var onlyOne = true;
+      for (var i = 0, len = promises.length; i < len; ++i) {
+        var promise = promises[i];
+        promise.then(function(value) {
+          if (onlyOne) {
+            onlyOne = false;
+            resolve(value);
+          }
+        }, function(error) {
+          if (onlyOne) {
+            onlyOne = false;
+            reject(error);
+          }
+        });
+      }
+    });
+  };
 
   return iPromise;
 

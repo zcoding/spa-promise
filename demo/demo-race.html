@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Promise/A+</title>
+</head>
+<body>
+  <h1>测试iPromise.race</h1>
+  <p>这个例子将使用iPromise API</p>
+  <script src="/ipromise.js"></script>
+  <script>
+  var do1 = function(value) {
+    return new iPromise(function(resolve, reject) {
+      setTimeout(function() {
+        resolve(value);
+      }, 2500);
+    });
+  };
+  var do2 = function(value) {
+    return new iPromise(function(resolve, reject) {
+      setTimeout(function() {
+        resolve(value);
+      }, 2000);
+    });
+  }
+  iPromise.race([do1(11), do2(12)])
+    .then(function(value) {
+      console.log(value);
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+  </script>
+</body>
+</html>
