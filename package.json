@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node --harmony scripts/server.js",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "compress": "node_modules/.bin/uglifyjs src/ipromise.js -o build/ipromise.min.js --source-map build/ipromise.min.map --source-map-url ipromise.min.map -c -m",
+    "concat": "node scripts/concat.js",
+    "release": "node scripts/release.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +27,7 @@
   "devDependencies": {
     "koa": "^0.21.0",
     "koa-router": "^5.1.2",
-    "koa-static": "^1.4.9"
+    "koa-static": "^1.4.9",
+    "uglify-js": "^2.4.23"
   }
 }

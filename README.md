@@ -7,6 +7,8 @@ Promises/A+ API for Single Page Application
 [https://github.com/promises-aplus/promises-spec](https://github.com/promises-aplus/promises-spec)
 
 ## How to
+打开server查看demo：`npm start`
+
 example:
 ```javascript
 var myPromise = new iPromise(function(fulfill, reject) {

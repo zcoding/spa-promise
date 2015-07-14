@@ -16,7 +16,7 @@ router.get('/', function *(next) {
 });
 
 app.use(serve(path.resolve(__dirname, '../demo')))
-  .use(serve(path.resolve(__dirname, '../src')))
+  .use(serve(path.resolve(__dirname, '../build')))
   .use(responseTime)
   .use(router.routes())
   .use(router.allowedMethods());
