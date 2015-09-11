@@ -7,7 +7,7 @@
 <body>
   <h1>这个例子和demo-es6完全一样</h1>
   <p>这个例子将使用iPromise API</p>
-  <script src="/ipromise.min.js"></script>
+  <script src="../build/ipromise.min.js"></script>
   <script>
   var origin = 10;
   var doSomething = function(value) {
@@ -24,7 +24,7 @@
   var doAnotherThing = function(value) {
     return new iPromise(function(resolve, reject) {
       setTimeout(function() {
-        resolve(value+10);
+        resolve(value + 10);
       }, 3000);
     });
   };

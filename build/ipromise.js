@@ -1,3 +1,11 @@
+/*/
+/// author: zcoding
+/// version: 0.1.0
+/// repository: https://github.com/zcoding/spa-promise.git
+/*/
+
+(function(exports) {
+
 var toString = Object.prototype.toString,
   isFunction = function(obj) {
     return toString.call(obj) === '[object Function]';
@@ -257,3 +265,5 @@ iPromise.race = function(promises) {
 };
 
 exports.iPromise = iPromise;
+
+})(window);

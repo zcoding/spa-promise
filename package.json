@@ -1,14 +1,12 @@
 {
   "name": "spa-promise",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "promises/a+ api for single page application",
-  "main": "index.js",
+  "main": "./src/ipromise.js",
   "scripts": {
-    "start": "node --harmony scripts/server.js",
     "test": "node scripts/test.js",
-    "compress": "node_modules/.bin/uglifyjs src/ipromise.js -o build/ipromise.min.js --source-map build/ipromise.min.map --source-map-url ipromise.min.map -c -m",
-    "concat": "node scripts/concat.js",
-    "release": "node scripts/release.js"
+    "build": "gulp build",
+    "release": "gulp release"
   },
   "repository": {
     "type": "git",
@@ -25,9 +23,12 @@
   },
   "homepage": "https://github.com/zcoding/spa-promise",
   "devDependencies": {
-    "koa": "^0.21.0",
-    "koa-router": "^5.1.2",
-    "koa-static": "^1.4.9",
-    "uglify-js": "^2.4.23"
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-uglify": "^1.4.1",
+    "gulp-zip": "^3.0.2"
   }
 }

@@ -7,14 +7,14 @@
 <body>
   <h1>测试iPromise.reject</h1>
   <p>这个例子将使用iPromise API</p>
-  <script src="/ipromise.min.js"></script>
+  <script src="../build/ipromise.min.js"></script>
   <script>
   var shit = iPromise.reject(new TypeError('shit!'));
   shit.then(function(value) {
-      console.log(value);
-    }).catch(function(error) {
-      console.log(error);
-    });
+    console.log(value);
+  }).catch(function(error) {
+    console.log(error);
+  });
   </script>
 </body>
 </html>

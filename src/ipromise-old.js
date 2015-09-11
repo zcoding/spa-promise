@@ -13,12 +13,22 @@ var toString = Object.prototype.toString,
  * @param {Function} onRejected
  */
 function handle(promise, onFulfilled, onRejected) {
-  if (isFunction(onFulfilled)) {
-    promise._FCallbacks.push(onFulfilled);
+  if (promise._state === FULFILLED) {
+    onFulfilled(promise._value);
+    return;
   }
-  if (isFunction(onRejected)) {
-    promise._RCallbacks.push(onRejected);
+  if (promise._state === REJECTED) {
+    onRejected(promise._value);
+    return;
   }
+  setTimeout(function() { // always async
+    if (isFunction(onFulfilled)) {
+      promise._FCallbacks.push(onFulfilled);
+    }
+    if (isFunction(onRejected)) {
+      promise._RCallbacks.push(onRejected);
+    }
+  }, 0);
 }
 
 function thenable(x) {
@@ -38,38 +48,21 @@ function thenable(x) {
 function resolve(promise, x) {
   if (promise === x) {
     reject(promise, new TypeError('The promise and its value refer to the same object.'));
-  } else if (x && x.constructor === iPromise) {
-    if (x._state === PENDING) {
-			x.then(function (val) {
-				resolve(promise, val);
-			}, function (reason) {
-				reject(promise, reason);
-			})
-		}
-		else if (x._state === FULFILLED) {
-			fulfill(promise, x._value);
-		}
-		else if (x._state === REJECTED) {
-			reject(promise, x._value);
-		}
-  } else {
-    var done = false; // 保证只调用一次
-    try {
-      var then = thenable(x);
-      if (then) { // thenable
-        then.call(x, function(y) {
-          done || resolve(promise, y);
-          done = true;
-        }, function(r) {
-          done || reject(promise, r);
-          done = true;
-        });
-      } else {
-        fulfill(promise, x);
-      }
-    } catch (e) {
-      done || reject(promise, e);
+    return;
+  }
+  try {
+    var then = thenable(x);
+    if (then) { // thenable
+      then.call(x, function(value) {
+        resolve(promise, value);
+      }, function(error) {
+        reject(promise, error);
+      });
+      return;
     }
+    fulfill(promise, x);
+  } catch (e) {
+    reject(promise, e);
   }
 }
 
@@ -79,17 +72,12 @@ function resolve(promise, x) {
  * @param {Object} value
  */
 function fulfill(promise, value) {
-  if (promise._state !== PENDING) {
-		return;
-	}
   promise._state = FULFILLED;
   promise._value = value;
-  setTimeout(function() {
-    for (var i = 0, len = promise._FCallbacks.length; i < len; ++i) {
-      promise._FCallbacks[i].call(null, value);
-    }
-    promise._FCallbacks.splice(0); // once fufilled, empty callback queue
-  }, 0);
+  for (var i = 0, len = promise._FCallbacks.length; i < len; ++i) {
+    promise._FCallbacks[i].call(null, value);
+  }
+  promise._FCallbacks.splice(0); // once fufilled, empty callback queue
 }
 
 /**
@@ -98,17 +86,12 @@ function fulfill(promise, value) {
  * @param {Obejct} error
  */
 function reject(promise, error) {
-  if (promise._state !== PENDING) {
-		return;
-	}
   promise._state = REJECTED;
   promise._value = error;
-  setTimeout(function() {
-    for (var i = 0, len = promise._RCallbacks.length; i < len; ++i) {
-      promise._RCallbacks[i].call(null, error);
-    }
-    promise._RCallbacks.splice(0); // once rejected, empty callback queue
-  }, 0);
+  for (var i = 0, len = promise._RCallbacks.length; i < len; ++i) {
+    promise._RCallbacks[i].call(null, error);
+  }
+  promise._RCallbacks.splice(0); // once rejected, empty callback queue
 }
 
 /**
@@ -125,15 +108,11 @@ function iPromise(resolver) {
 
   var promise = this;
 
-  try {
-    resolver(function(value) {
-      resolve(promise, value);
-    }, function(error) {
-      reject(promise, error);
-    });
-  } catch(err) {
-    reject(promise, err);
-  }
+  resolver(function(value) {
+    resolve(promise, value);
+  }, function(error) {
+    reject(promise, error);
+  });
 
 }
 
@@ -159,19 +138,18 @@ prtt.then = function(onFulfilled, onRejected) {
       } else {
         resolve(value);
       }
-    }, function(reason) {
+    }, function(error) {
       if (isFunction(onRejected)) {
         try {
-          resolve(onRejected(reason));
-        } catch (error) {
-          reject(error);
+          resolve(onRejected(error))
+        } catch (ex) {
+          reject(ex);
         }
       } else {
-        reject(reason);
+        reject(error);
       }
     });
   });
-
 };
 
 /**
