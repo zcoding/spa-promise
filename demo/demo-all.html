@@ -7,23 +7,26 @@
 <body>
   <h1>测试iPromise.all</h1>
   <p>这个例子将使用iPromise API</p>
-  <script src="../build/ipromise.min.js"></script>
+  <script src="../build/ipromise.js"></script>
   <script>
   var do1 = function(value) {
     return new iPromise(function(resolve, reject) {
       setTimeout(function() {
         resolve(value);
-      }, 1000);
+      }, 5000);
     });
   };
   var do2 = function(value) {
     return new iPromise(function(resolve, reject) {
       setTimeout(function() {
         resolve(value);
-      }, 2000);
+      }, 4000);
     });
   }
-  iPromise.all([do1(11), do2(12)])
+
+  var p1 = do1(11);
+  var p2 = do2(12);
+  iPromise.all([p2, p1])
     .then(function(values) {
       for (var i = 0, len = values.length; i < len; ++i) {
         console.log(values[i]);

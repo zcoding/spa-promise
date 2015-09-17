@@ -13,14 +13,14 @@
     return new iPromise(function(resolve, reject) {
       setTimeout(function() {
         resolve(value);
-      }, 2500);
+      }, 1000);
     });
   };
   var do2 = function(value) {
     return new iPromise(function(resolve, reject) {
       setTimeout(function() {
         resolve(value);
-      }, 2000);
+      }, 5000);
     });
   }
   iPromise.race([do1(11), do2(12)])

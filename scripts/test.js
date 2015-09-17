@@ -1,13 +1,24 @@
 var iPromise = require('../src/ipromise').iPromise;
 
-var myPromise = new iPromise(function(resolve, reject) {
-  setTimeout(function() {
-    resolve('shit');
-  }, 3000);
-});
+var promisesAplusTests = require("promises-aplus-tests");
 
-console.log('now wait...');
+var adapter = {
+  resolved: iPromise.resolve,
+  rejected: iPromise.reject,
+  deferred: function() {
+    var p = new iPromise(function(resolve, reject) {
+      setTimeout(function() {
+        resolve(123);
+      }, 3000);
+    });
+    return {
+      promise: p,
+      resolve: p.then.bind(p),
+      reject: p.catch.bind(p)
+    };
+  }
+};
 
-myPromise.then(function(result) {
-  console.log('I got ' + result);
+promisesAplusTests(adapter, function (err) {
+  if (err) console.log(err);
 });

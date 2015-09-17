@@ -12,7 +12,7 @@ var toString = Object.prototype.toString,
  * @param {Function} onFulfilled
  * @param {Function} onRejected
  */
-function handle(promise, onFulfilled, onRejected) {
+function next(promise, onFulfilled, onRejected) {
   if (isFunction(onFulfilled)) {
     promise._FCallbacks.push(onFulfilled);
   }
@@ -33,13 +33,12 @@ function thenable(x) {
  * promise resolution procedure
  * @param {iPromise} promise
  * @param {Object} x
- * TODO: async bug
  */
 function resolve(promise, x) {
   if (promise === x) {
     reject(promise, new TypeError('The promise and its value refer to the same object.'));
   } else if (x && x.constructor === iPromise) {
-    if (x._state === PENDING) {
+    if (x._state === PENDING) { // 如果x未完成，先等x完成，再执行promise
 			x.then(function (val) {
 				resolve(promise, val);
 			}, function (reason) {
@@ -57,7 +56,7 @@ function resolve(promise, x) {
     try {
       var then = thenable(x);
       if (then) { // thenable
-        then.call(x, function(y) {
+        then.call(x, function(y) { // 如果是thenable，先等thenable完成，再执行promise
           done || resolve(promise, y);
           done = true;
         }, function(r) {
@@ -148,8 +147,8 @@ var prtt = iPromise.prototype;
  */
 prtt.then = function(onFulfilled, onRejected) {
   var oldPromise = this;
-  return new iPromise(function(resolve, reject) {
-    handle(oldPromise, function(value) { // pending until old promise is resolved or rejected
+  var thenPromise = new iPromise(function(resolve, reject) {
+    next(oldPromise, function(value) { // pending until old promise is resolved or rejected
       if (isFunction(onFulfilled)) {
         try {
           resolve(onFulfilled(value));
@@ -171,6 +170,8 @@ prtt.then = function(onFulfilled, onRejected) {
       }
     });
   });
+
+  return thenPromise;
 
 };
 
@@ -215,18 +216,20 @@ iPromise.reject = function(error) {
  * @return {iPromise}
  */
 iPromise.all = function(promises) {
-  var accumulator = [];
+  var stack = [];
   var ready = iPromise.resolve(null);
-  for (var i = 0, len = promises.length; i < len; ++i) {
-    var promise = promises[i];
+  function then(promise) {
     ready = ready.then(function() {
       return promise;
-    }).then(function(value) {
-      accumulator.push(value);
+    }).then(function(val) {
+      stack.push(val);
     });
   }
+  for (var i = 0; i < promises.length; ++i) {
+    then(promises[i]);
+  }
   return ready.then(function() {
-    return accumulator;
+    return stack;
   });
 };
 
