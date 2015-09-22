@@ -12,6 +12,12 @@
   var shit = iPromise.resolve(123);
   shit.then(function(value) {
     console.log('异步的：' + value);
+    return value;
+  }).then(function(value) {
+    console.log('这是新的promise: ' + value);
+  });
+  shit.then(function(value) {
+    console.log('按顺序执行');
   });
   // var s = new Promise(function(resolve, reject) {
   //   resolve(123);

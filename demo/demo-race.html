@@ -20,10 +20,10 @@
     return new iPromise(function(resolve, reject) {
       setTimeout(function() {
         resolve(value);
-      }, 5000);
+      }, 1001);
     });
   }
-  iPromise.race([do1(11), do2(12)])
+  iPromise.race([do1(12), do2(11)])
     .then(function(value) {
       console.log(value);
     })

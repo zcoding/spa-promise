@@ -1,4 +1,4 @@
-var iPromise = require('../src/ipromise').iPromise;
+var iPromise = require('../src/promise').iPromise;
 
 var promisesAplusTests = require("promises-aplus-tests");
 

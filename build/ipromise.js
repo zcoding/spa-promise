@@ -1,224 +1,164 @@
 /*/
 /// author: zcoding
-/// version: 0.1.0
+/// version: 0.2.0
 /// repository: https://github.com/zcoding/spa-promise.git
 /*/
 
 (function(exports) {
 
-var toString = Object.prototype.toString,
-  isFunction = function(obj) {
-    return toString.call(obj) === '[object Function]';
-  },
-  FULFILLED = 1,
-  REJECTED = 2,
-  PENDING = 0;
+var PENDING = 0,
+    FULFILLED = 1,
+    REJECTED = 2; 
 
-/**
- * handle a callback
- * @param {iPromise} promise
- * @param {Function} onFulfilled
- * @param {Function} onRejected
- */
-function next(promise, onFulfilled, onRejected) {
-  if (isFunction(onFulfilled)) {
-    promise._FCallbacks.push(onFulfilled);
-  }
-  if (isFunction(onRejected)) {
-    promise._RCallbacks.push(onRejected);
-  }
-}
+var isFunction = function(obj) {
+  return Object.prototype.toString.call(obj) === '[object Function]';
+};
 
 function thenable(x) {
   var t = typeof x;
-  if (x && (t === 'object' || t === 'function') && typeof x.then === 'function') {
+  if (x && (t === 'object' || t === 'function') && typeof x.then === 'function') { // 2.3.3
     return x.then;
   }
   return false;
 }
 
+function execCallbacks(promise, valueORreason) {
+  if (promise._state === PENDING) {
+    return;
+  } else if (promise._state === FULFILLED) {
+    for (var i = 0; i < promise._fulfillCallbacks.length; ++i) {
+      promise._fulfillCallbacks[i].call(null, valueORreason); // 2.2.5
+    }
+    promise._fulfillCallbacks.splice(0);
+  } else if (promise._state === REJECTED) {
+    for (var i = 0; i < promise._rejectCallbacks.length; ++i) {
+      promise._rejectCallbacks[i].call(null, valueORreason); // 2.2.5
+    }
+    promise._rejectCallbacks.splice(0);
+  }
+}
+
 /**
- * promise resolution procedure
+ * 2.3 The Promise Resolution Procedure
  * @param {iPromise} promise
  * @param {Object} x
  */
 function resolve(promise, x) {
   if (promise === x) {
-    reject(promise, new TypeError('The promise and its value refer to the same object.'));
-  } else if (x && x.constructor === iPromise) {
-    if (x._state === PENDING) { // 如果x未完成，先等x完成，再执行promise
-			x.then(function (val) {
-				resolve(promise, val);
-			}, function (reason) {
-				reject(promise, reason);
-			})
-		}
-		else if (x._state === FULFILLED) {
-			fulfill(promise, x._value);
-		}
-		else if (x._state === REJECTED) {
-			reject(promise, x._value);
-		}
+    reject(promise, new TypeError('The promise and its value refer to the same object.')); // 2.3.1
+  } else if (x && x.constructor === iPromise) { // 2.3.2
+    if (x._state === PENDING) { // 2.3.2.1
+      x.then(function(_value) {
+        fulfill(promise, _value); // 2.3.2.2
+      }, function(_reason) {
+        reject(promise, _reason); // 2.3.2.3
+      });
+    } else if (x._state === FULFILLED) {
+      fulfill(promise, x._value); // 2.3.2.2
+    } else if (x._state === REJECTED) {
+      reject(promise, x._reason); // 2.3.2.3
+    }
   } else {
-    var done = false; // 保证只调用一次
+    var firstCall = true;
     try {
-      var then = thenable(x);
-      if (then) { // thenable
-        then.call(x, function(y) { // 如果是thenable，先等thenable完成，再执行promise
-          done || resolve(promise, y);
-          done = true;
+      var then = thenable(x); // 2.3.3.1
+      if (then) {
+        then.call(x, function(y) { // 2.3.3.3
+          if (firstCall) { // 2.3.3.3.3
+            resolve(promise, y); // 2.3.3.3.1
+            firstCall = false;
+          }
         }, function(r) {
-          done || reject(promise, r);
-          done = true;
+          if (firstCall) { // 2.3.3.3.3
+            reject(promise, r); // 2.3.3.3.2
+            firstCall = false;
+          }
         });
       } else {
-        fulfill(promise, x);
+        fulfill(promise, x); // 2.3.3.4, 2.3.4
       }
     } catch (e) {
-      done || reject(promise, e);
-    }
-  }
-}
-
-/**
- * change the status to `FULFILLED` and invoke callbacks
- * @param {iPromise} promise
- * @param {Object} value
- */
-function fulfill(promise, value) {
-  if (promise._state !== PENDING) {
-		return;
-	}
-  promise._state = FULFILLED;
-  promise._value = value;
-  setTimeout(function() {
-    for (var i = 0, len = promise._FCallbacks.length; i < len; ++i) {
-      promise._FCallbacks[i].call(null, value);
-    }
-    promise._FCallbacks.splice(0); // once fufilled, empty callback queue
-  }, 0);
-}
-
-/**
- * change the status to `REJECTED` and invoke callbacks
- * @param {iPromise} promise
- * @param {Obejct} error
- */
-function reject(promise, error) {
-  if (promise._state !== PENDING) {
-		return;
-	}
-  promise._state = REJECTED;
-  promise._value = error;
-  setTimeout(function() {
-    for (var i = 0, len = promise._RCallbacks.length; i < len; ++i) {
-      promise._RCallbacks[i].call(null, error);
-    }
-    promise._RCallbacks.splice(0); // once rejected, empty callback queue
-  }, 0);
-}
-
-/**
- * @class iPromise
- * @param {Function} resolver
- * @constructor
- */
-function iPromise(resolver) {
-
-  this._state = PENDING;
-  this._value = null;
-  this._FCallbacks = []; // FULFILLED callback queue
-  this._RCallbacks = []; // REJECTED callback queue
-
-  var promise = this;
-
-  try {
-    resolver(function(value) {
-      resolve(promise, value);
-    }, function(error) {
-      reject(promise, error);
-    });
-  } catch(err) {
-    reject(promise, err);
-  }
-
-}
-
-var prtt = iPromise.prototype;
-
-/**
- * .then(onFulfilled, onRejected)
- * @method
- * @param {Function} onFulfilled
- * @param {Function} onRejected
- * @return {iPromise} always return a new Promsie
- */
-prtt.then = function(onFulfilled, onRejected) {
-  var oldPromise = this;
-  var thenPromise = new iPromise(function(resolve, reject) {
-    next(oldPromise, function(value) { // pending until old promise is resolved or rejected
-      if (isFunction(onFulfilled)) {
-        try {
-          resolve(onFulfilled(value));
-        } catch (error) {
-          reject(error);
-        }
-      } else {
-        resolve(value);
+      if (firstCall) { // 2.3.3.3.3
+        reject(promise, e); // 2.3.3.2
+        firstCall = false;
       }
-    }, function(reason) {
-      if (isFunction(onRejected)) {
+    }
+  }
+}
+
+function fulfill(promise, value) {
+  if (promise._state === PENDING) {
+    promise._state = FULFILLED;
+    promise._value = value;
+    setTimeout(function() {
+      execCallbacks(promise, value);
+    }, 0);
+  }
+}
+
+function reject(promise, reason) {
+  if (promise._state === PENDING) {
+    promise._state = REJECTED;
+    promise._reason = reason;
+    setTimeout(function() {
+      execCallbacks(promise, reason);
+    }, 0);
+  }
+}
+
+function iPromise(resolver) {
+  this._value = null;
+  this._reason = null;
+  this._state = PENDING;
+  this._fulfillCallbacks = [];
+  this._rejectCallbacks = [];
+  
+  var promise = this;
+  // do resolver
+  resolver(function(value) {
+    resolve(promise, value);
+  }, function(reason) {
+    reject(promise, reason);
+  });
+}
+
+iPromise.prototype.then = function(onFulfilled, onRejected) {
+  var thisPromise = this;
+  var thenPromise = new iPromise(function(thenResolve, thenReject) {
+    thisPromise._fulfillCallbacks.push(function(thisValue) { // 2.2.6.1
+      if (isFunction(onFulfilled)) { // 2.2.1.1
         try {
-          resolve(onRejected(reason));
-        } catch (error) {
-          reject(error);
+          var afterOnFulfilled = onFulfilled(thisValue); // 2.2.2.1
+          thenResolve(afterOnFulfilled); // 2.2.7.1
+        } catch (exception) { // 2.2.7.2
+          thenReject(exception);
         }
       } else {
-        reject(reason);
+        thenResolve(thisValue); // 2.2.7.3
+      }
+    });
+    thisPromise._rejectCallbacks.push(function(thisReason) { // 2.2.6.2
+      if (isFunction(onRejected)) { // 2.2.1.2
+        try {
+          var afterOnRejected = onRejected(thisReason); // 2.2.3.1
+          thenResolve(afterOnFulfilled);
+        } catch(exception) { // 2.2.7.2
+          thenReject(exception);
+        }
+      } else {
+        thenReject(thisReason); // 2.2.7.4
       }
     });
   });
-
-  return thenPromise;
-
+  return thenPromise; // 2.2.7
 };
 
-/**
- * .catch(onRejected)
- * @method
- * @param {Function} onRejected
- * @return {iPromsie} always return a new Promise
- */
-prtt.catch = function(onRejected) {
+iPromise.prototype.catch = function(onRejected) {
   return this.then(null, onRejected);
 };
 
 /**
- * .resolve(value)
- * @static
- * @param {Object} value
- * @return {iPromise}
- */
-iPromise.resolve = function(value) {
-  return new iPromise(function(resolve, reject) {
-    resolve(value);
-  });
-};
-
-/**
- * .reject(error)
- * @static reject
- * @param {Object} error
- * @return {iPromise}
- */
-iPromise.reject = function(error) {
-  return new iPromise(function(resolve, reject) {
-    reject(error);
-  });
-};
-
-/**
- * .all(promises)
+ * iPromise.all(promises)
  * @static
  * @param {Array} promises
  * @return {iPromise}
@@ -242,28 +182,40 @@ iPromise.all = function(promises) {
 };
 
 /**
- * .race(promises)
+ * iPromise.race(promises)
  * @static
  * @param {Array} promises
  * @return {iPromise}
  */
 iPromise.race = function(promises) {
-  return new iPromise(function(resolve, reject) {
+  return new iPromise(function(_resolve, _reject) {
     var onlyOne = true;
     for (var i = 0, len = promises.length; i < len; ++i) {
       var promise = promises[i];
       promise.then(function(value) {
         if (onlyOne) {
           onlyOne = false;
-          resolve(value);
+          _resolve(value);
         }
       }, function(error) {
         if (onlyOne) {
           onlyOne = false;
-          reject(error);
+          _reject(error);
         }
       });
     }
+  });
+};
+
+iPromise.resolve = function(value) {
+  return new iPromise(function(_resolve, _reject) {
+    _resolve(value);
+  });
+};
+
+iPromise.reject = function(reason) {
+  return new iPromise(function(_resolve, _reject) {
+    _reject(reason);
   });
 };
 

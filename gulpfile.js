@@ -8,7 +8,7 @@ var replace = require('gulp-replace');
 
 var pkg = require('./package.json');
 
-var sources = ['./src/intro.js', './src/ipromise.js', './src/outro.js'];
+var sources = ['./src/intro.js', './src/promise.js', './src/outro.js'];
 
 gulp.task('build', function() {
 
