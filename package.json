@@ -1,12 +1,13 @@
 {
   "name": "spa-promise",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "promises/a+ api for single page application",
   "main": "./src/ipromise.js",
   "scripts": {
     "test": "node scripts/test.js",
     "build": "gulp build",
-    "release": "gulp release"
+    "release": "gulp release",
+    "dev": "gulp dev"
   },
   "repository": {
     "type": "git",

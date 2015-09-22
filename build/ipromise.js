@@ -1,6 +1,6 @@
 /*/
 /// author: zcoding
-/// version: 0.2.0
+/// version: 0.3.0
 /// repository: https://github.com/zcoding/spa-promise.git
 /*/
 
@@ -20,6 +20,10 @@ function thenable(x) {
     return x.then;
   }
   return false;
+}
+
+function asyncCall(cb) {
+  setTimeout(cb, 0);
 }
 
 function execCallbacks(promise, valueORreason) {
@@ -90,9 +94,9 @@ function fulfill(promise, value) {
   if (promise._state === PENDING) {
     promise._state = FULFILLED;
     promise._value = value;
-    setTimeout(function() {
+    asyncCall(function() {
       execCallbacks(promise, value);
-    }, 0);
+    });
   }
 }
 
@@ -100,9 +104,9 @@ function reject(promise, reason) {
   if (promise._state === PENDING) {
     promise._state = REJECTED;
     promise._reason = reason;
-    setTimeout(function() {
+    asyncCall(function() {
       execCallbacks(promise, reason);
-    }, 0);
+    });
   }
 }
 
