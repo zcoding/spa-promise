@@ -1,21 +1,26 @@
 # spa-promise
-Promises/A+ API for Single Page Application
+Promises/A+ implementation
 
-## Promises/A+
-[Promises/A+](https://promisesaplus.com/)是一个为健全可互操作的JavaScript Promise制定的开放标准。
+## about Promises/A+
+[Promises/A+ official site](https://promisesaplus.com/)
 
-[https://github.com/promises-aplus/promises-spec](https://github.com/promises-aplus/promises-spec)
+[Promises/A+ Github](https://github.com/promises-aplus/promises-spec)
 
-## How to
-打开server查看demo：`npm start`
+## simple usage example
 
-example:
+### in browser
+```html
+<script src="/build/ipromise.js"></script>
+<!-- min version -->
+<script src="/build/ipromise.min.js"></script>
+```
+
 ```javascript
-var myPromise = new iPromise(function(fulfill, reject) {
+var myPromise = new iPromise(function(resolve, reject) {
     setTimeout(function() {
         try {
             var result = syncProcess();
-            fulfill(result);
+            resolve(result);
         } catch(err) {
             reject(err);
         }
@@ -27,37 +32,32 @@ myPromise.then(function(result) {
     console.log('Something wrong.' + err);
 });
 ```
-example with aja:
+
+### in node.js
 ```javascript
-aja('/api/demo').get({page: 1})
-  .then(function(response) {
-    console.log('Get response: ' + response);
-  }, function(error) {
-    console.log('Aja error: ' + error);
-  })
-  .then(JSON.parse)
-  .then(function(json) {
-    console.log('Get json: ', json);
-  })
-  .catch(function(error) {
-    // deal with error
-  });
+var iPromise = require('./spa-promise').iPromise;
+// ...
 ```
-##chain
-`then`方法可以链式调用，`then`方法总是返回一个<strong>新的</strong>iPromise对象。
-```javascript
-doSomething()
-  .then(doSomethingElse)
-  .then(doAnotherThing)
-  .catch(dealWithError)
-```
-在这里，`doSomething`|`doSomethingElse`|`doAnotherThing`都返回一个Promise，虽然每个函数内部都是异步的，但总能保证先完成doSomething，再做doSomethingElse，最后做doAnotherThing
-## Static API
 
-###`.resolve(value)`
+[more examples](https://github.com/zcoding/spa-promise/tree/master/demo)
 
-###`.reject(value)`
+## api
 
-###`.all(promises)`
++ `.then(onFulfilled, onRejected)` [usage](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then)
 
-###`.race(promise)`
++ `.catch(onRejected)` [usage](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch)
+
++ `iPromise.resolve(value)` [usage](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve)
+
++ `iPromise.reject(reason)` [usage](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/reject)
+
++ `iPromise.all(promises)` [usage](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
+
++ `iPromise.race(promises)` [usage](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race)
+
+## development
+
++ `gulp dev` or `npm run dev` for development
++ `gulp build` or `npm run build` for browser-version build
++ `gulp release` or `npm run release` for zip file
++ `npm test` for test
